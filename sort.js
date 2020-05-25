@@ -43,8 +43,11 @@ rankedSentences
   })
   .reverse()
 
-const finalizedSentences = stringify(rankedSentences, {
-  delimiter: "\t"
-})
+const finalizedSentences = stringify(
+  rankedSentences.map(([hindi, english]) => [hindi, english]),
+  {
+    delimiter: "\t"
+  }
+)
 
 fs.writeFileSync("sorted_sentences.tsv", finalizedSentences)
