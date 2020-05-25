@@ -1,16 +1,21 @@
 const fs = require("fs")
 const parse = require("csv-parse/lib/sync")
+const stringify = require("csv-stringify/lib/sync")
 
-const sentences = parse(fs.readFileSync("sentences.tsv"), {
-  delimiter: "\t"
-})
+const sentences = Object.entries(
+  Object.fromEntries(
+    parse(fs.readFileSync("sentences.tsv"), {
+      delimiter: "\t"
+    })
+  )
+)
 
 const frequencyScores = {}
 
 sentences.forEach(([hindi]) => {
   words = hindi.split(" ")
 
-  words.forEach(word  => {
+  words.forEach(word => {
     if (frequencyScores[word]) {
       frequencyScores[word]++
     } else {
@@ -27,13 +32,19 @@ const avg = xs => {
 const rankedSentences = sentences.map(([hindi, english]) => {
   const words = hindi.split(" ")
 
-  const normalizedFrequencyScore = avg(words.map(word =>
-    frequencyScores[word]
-  ))
+  const normalizedFrequencyScore = avg(words.map(word => frequencyScores[word]))
 
   return [hindi, english, normalizedFrequencyScore]
 })
 
-rankedSentences.sort((a, b) => {
-  return a[2] + b[2]
+rankedSentences
+  .sort((a, b) => {
+    return a[2] - b[2]
+  })
+  .reverse()
+
+const finalizedSentences = stringify(rankedSentences, {
+  delimiter: "\t"
 })
+
+fs.writeFileSync("sorted_sentences.tsv", finalizedSentences)
